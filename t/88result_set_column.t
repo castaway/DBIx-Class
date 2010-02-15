@@ -119,6 +119,41 @@ lives_ok ( sub {
   );
 });
 
+# test exotic scenarious
+# "How many CDs have been released per year where a given CD has at least one track and the artist isn't evancarroll?"
+lives_ok ( sub {
+  my $rs = $schema->resultset ('CD')->search (
+    { 'artist.name' => { '!=', 'evancarrol' }, 'tracks.trackid' => { '!=', undef } },
+    {
+      order_by => 'me.year',
+      join => [qw/artist tracks/],
+      columns => [ { year => 'me.year'}, { cnt => { count => '*' }} ],
+    },
+  );
+
+  my $sets = {
+    grouped => $rs->search_rs ({}, { group_by => 'year' }),
+    distinct => $rs->search_rs ({}, { distinct => 1 }),
+  };
+
+  for my $type (sort keys %$sets) {
+    is ($sets->{$type}->count, 4, "correct $type amount");
+
+    is_deeply (
+      [ $sets->{$type}->get_column ('year')->all ],
+      [qw/1997 1998 1999 2001/],
+      "Get grouped column with $type works",
+    );
+
+    is_deeply (
+      [ $sets->{$type}->get_column ('cnt')->all ],
+      [qw/1 1 1 2/],
+      "Get aggregate over $type works",
+    );
+  }
+});
+
+
 # test for prefetch not leaking
 {
   my $rs = $schema->resultset("CD")->search({}, { prefetch => 'artist' });
