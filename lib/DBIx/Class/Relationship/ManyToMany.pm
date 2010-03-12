@@ -6,6 +6,7 @@ use warnings;
 
 use Carp::Clan qw/^DBIx::Class/;
 use Sub::Name ();
+use Scalar::Util ();
 
 our %_pod_inherit_config = 
   (
@@ -125,10 +126,9 @@ EOW
 
     my $remove_meth_name = join '::', $class, $remove_meth;
     *$remove_meth_name = Sub::Name::subname $remove_meth_name, sub {
-      my $self = shift;
-      @_ > 0 && ref $_[0] ne 'HASH'
+      my ($self, $obj) = @_;
+      Scalar::Util::blessed ($obj)
         or $self->throw_exception("${remove_meth} needs an object");
-      my $obj = shift;
       my $rel_source = $self->search_related($rel)->result_source;
       my $cond = $rel_source->relationship_info($f_rel)->{cond};
       my $link_cond = $rel_source->_resolve_condition(
