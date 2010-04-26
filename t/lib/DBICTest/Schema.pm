@@ -10,6 +10,7 @@ __PACKAGE__->load_classes(qw/
   SequenceTest
   BindType
   Employee
+  NoBackRels
   CD
   FileColumn
   Genre
