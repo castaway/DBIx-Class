@@ -1,3 +1,49 @@
+How to allow custom relations:
+
+* add_relationship is augmented to accept a coderef in addition to the 
+traditional { foreign... => self... } hashref to specify an ON join 
+condition. The coderef's signature is:
+
+my ( $self_alias, $rel_alias, $self_rsrc, $rel_name ) = @_;
+
+The coderef is expected to return a *SQLA* where-clause compatible
+structure (this implies that t1.cola = t2.colb must be written as
+{ t1.cola => \'t2.colb' }). The DBIC-SQLA shim is then augmented
+to recognize such conditions, and pass them through _recurse_where
+in order to produce the final ON clause
+
+Why is this hard:
+
+* Relationships definitions are treated as fully-introdspectable structures 
+by the rest of DBIC. Thus a simple $obj->rel is currently implemented as:
+
+  * resolve the relationship by substituting the relevant values of $obj into
+    a hashref of related.col => value pairs
+  * Create a new resultset with the relationship resolution result as a 
+    search condition
+
+This of course breaks down when you have a complex structure returned by the 
+newly introduced coderef. As a start this codnition needs to be special-cased
+so that $obj->rel with a complex ON clause will result in a search_related() 
+off a resultset constructed from the ident() of $obj. Once this hurdle is
+cleared it should be possible to augment the RV of the relationship condition
+coderef with an additional simplied rel-cond hashref *if possible*.
+
+Example of such a simplifiable relationship is 'next_track' in 
+t/lib/DBICTest/Schema/Track.pm. Same goes for the relationship 'cds_80s' in 
+t/lib/DBICTest/Schema/Artist.pm. Note however that if any of these relations
+had a plain-value condition against a $self_alias.column, a full join would
+always have to take place, since this is the only way $self_alias would even 
+be available.
+
+
+
+
+
+
+
+
+
 mo: ribasushi: are you pro or con wrt the extended join conditions?
 [18:22] ribasushi: totally pro, but con scalarrefs
 [18:22] ribasushi: and I'm a horrible designer
