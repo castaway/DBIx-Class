@@ -134,7 +134,7 @@ $schema->storage->debug ($orig_debug);
 is_same_sql_bind (
   $sql,
   \@bind,
-  'DELETE FROM cd WHERE ( cdid IN ( SELECT me.cdid FROM cd me WHERE ( year != ? ) GROUP BY me.cdid ) )',
+  'DELETE FROM cd WHERE ( cdid IN ( SELECT me.cdid FROM cd me WHERE ( year != ? ) ) )',
   ["'2010'"],
   'Update on prefetching resultset strips prefetch correctly'
 );
