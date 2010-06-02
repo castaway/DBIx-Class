@@ -10,14 +10,20 @@ my $schema = DBICTest->init_schema();
 
 
 my $artist = $schema->resultset("Artist")->create({ name => 'Michael Jackson' });
-
 foreach my $year (1975..1985) {
   $artist->create_related('cds', { year => $year, title => 'Compilation from ' . $year });
 }
 
-my @cds_80s = $artist->cds_80s;
+my $artist2 = $schema->resultset("Artist")->create({ name => 'Chico Buarque' }) ;
+foreach my $year (1975..1995) {
+  $artist2->create_related('cds', { year => $year, title => 'Compilation from ' . $year });
+}
 
+my @cds_80s = $artist->cds_80s;
 is(@cds_80s, 6, '6 80s cds found');
+
+my @cds_90s = $artist2->cds_90s;
+is(@cds_90s, 6, '6 90s cds found even with non-optimized search');
 
 map { ok($_->year < 1990 && $_->year > 1979) } @cds_80s;
 
