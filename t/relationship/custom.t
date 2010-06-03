@@ -28,7 +28,10 @@ is(@cds_90s, 6, '6 90s cds found even with non-optimized search');
 map { ok($_->year < 1990 && $_->year > 1979) } @cds_80s;
 
 
-
+# search for all artists prefetching published cds in the 80s...
+my @all_cds_80s = $schema->resultset("Artist")->search
+  ({ 'cds_80s_noopt.cdid' => { '!=' => undef } }, { join => 'cds_80s_noopt' });
+is(@all_cds_80s, 16, '16 cds found even with the non-optimized search');
 
 my @last_track_ids;
 for my $cd ($schema->resultset('CD')->search ({}, { order_by => 'cdid'})->all) {
