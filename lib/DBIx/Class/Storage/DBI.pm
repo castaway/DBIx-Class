@@ -1778,6 +1778,7 @@ sub delete {
 # Generating a single PK column subquery is trivial and supported
 # by all RDBMS. However if we have a multicolumn PK, things get ugly.
 # Look at _multipk_update_delete()
+#*MOVE*
 sub _subq_update_delete {
   my $self = shift;
   my ($rs, $op, $values) = @_;
@@ -1819,6 +1820,7 @@ sub _subq_update_delete {
 # while allowing specific storages to override this with a faster
 # implementation.
 #
+#*MOVE*
 sub _multipk_update_delete {
   return shift->_per_row_update_delete (@_);
 }
@@ -1833,6 +1835,7 @@ sub _multipk_update_delete {
 # There should be no race conditions as the entire operation is rolled
 # in a transaction.
 #
+#*MOVE*
 sub _per_row_update_delete {
   my $self = shift;
   my ($rs, $op, $values) = @_;
@@ -2192,6 +2195,7 @@ sub _native_data_type {
 }
 
 # Check if placeholders are supported at all
+#*RENAME*
 sub _placeholders_supported {
   my $self = shift;
   my $dbh  = $self->_get_dbh;
@@ -2211,6 +2215,7 @@ sub _placeholders_supported {
 
 # Check if placeholders bound to non-string types throw exceptions
 #
+#*RENAME*
 sub _typeless_placeholders_supported {
   my $self = shift;
   my $dbh  = $self->_get_dbh;
