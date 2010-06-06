@@ -148,8 +148,6 @@ analogous to L<DBIx::Class::Row/set_column>.
 
 sub set_inflated_column {
   my ($self, $col, $inflated) = @_;
-  $self->set_column($col, $self->_deflated_column($col, $inflated));
-#  if (blessed $inflated) {
   if (ref $inflated && ref($inflated) ne 'SCALAR') {
     $self->{_inflated_column}{$col} = $inflated;
   } else {
@@ -157,6 +155,19 @@ sub set_inflated_column {
   }
   return $inflated;
 }
+
+  # do not start a change operation if the values do not differ
+  if (exists $self->{_inflated_column}{$col}) {
+    return $inflated
+      if ($self->_eq_column_values ($col, $inflated, $self->{_inflated_column}{$col} ) );
+
+    $self->make_column_dirty ($col); # so the comparison won't run again
+  }
+  return $inflated;
+
+  $self->set_column($col, $self->_deflated_column($col, $inflated));
+  return $self->{_inflated_column}{$col} = $inflated;
+
 
 =head2 store_inflated_column
 
@@ -169,7 +180,7 @@ as dirty. This is directly analogous to L<DBIx::Class::Row/store_column>.
 
 sub store_inflated_column {
   my ($self, $col, $inflated) = @_;
-#  unless (blessed $inflated) {
+
   unless (ref $inflated && ref($inflated) ne 'SCALAR') {
       delete $self->{_inflated_column}{$col};
       $self->store_column($col => $inflated);

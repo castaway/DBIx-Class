@@ -110,6 +110,18 @@ sub __new_related_find_or_new_helper {
 
   my $rsrc = $self->result_source;
 
+  # if we can figure out the reverse-rel, we can
+  # supply $self greatly optimizing the 1:M case
+  my $reverse = $rsrc->reverse_relationship_info($relname);
+  if (keys %{$reverse||{}} == 1) {
+    my ($rn) = keys %$reverse;
+    if ($reverse->{$rn}{attrs}{accessor}
+        && $reverse->{$rn}{attrs}{accessor} ne 'multi'
+    ) {
+      $data->{$rn} ||= $self;
+    }
+  }
+
   # create a mock-object so all new/set_column component overrides will run:
   my $rel_rs = $rsrc->related_source($relname)->resultset;
   my $new_rel_obj = $rel_rs->new_result($data);
@@ -317,10 +329,8 @@ sub insert {
       $rollback_guard ||= $source->storage->txn_scope_guard;
 
       MULTICREATE_DEBUG and warn "MC $self pre-reconstructing $relname $rel_obj\n";
-
       my $them = { %{$rel_obj->{_relationship_data} || {} }, $rel_obj->get_columns };
       my $existing;
-
       # if there are no keys - nothing to search for
       if (keys %$them and $existing = $self->result_source
                                            ->related_source($relname)
@@ -644,11 +654,15 @@ To retrieve all loaded column values as a hash, use L</get_columns>.
 sub get_column {
   my ($self, $column) = @_;
   $self->throw_exception( "Can't fetch data as class method" ) unless ref $self;
+
   return $self->{_column_data}{$column} if exists $self->{_column_data}{$column};
+
   if (exists $self->{_inflated_column}{$column}) {
-    return $self->store_column($column,
-      $self->_deflated_column($column, $self->{_inflated_column}{$column}));
+    return $self->store_column(
+        $column, $self->_deflated_column($column, $self->{_inflated_column}{$column})
+    );
   }
+
   $self->throw_exception( "No such column '${column}'" ) unless $self->has_column($column);
   return undef;
 }
@@ -700,11 +714,9 @@ See L</get_inflated_columns> to get the inflated values.
 
 sub get_columns {
   my $self = shift;
-  if (exists $self->{_inflated_column}) {
-    foreach my $col (keys %{$self->{_inflated_column}}) {
-      $self->store_column($col, $self->_deflated_column($col, $self->{_inflated_column}{$col}))
+  foreach my $col (keys %{$self->{_inflated_column}||{}}) {
+    $self->store_column($col, $self->_deflated_column($col, $self->{_inflated_column}{$col}))
         unless exists $self->{_column_data}{$col};
-    }
   }
   return %{$self->{_column_data}};
 }
@@ -1086,10 +1098,15 @@ extend this method to catch all data setting methods.
 
 sub store_column {
   my ($self, $column, $value) = @_;
-  $self->throw_exception( "No such column '${column}'" )
-    unless exists $self->{_column_data}{$column} || $self->has_column($column);
+
   $self->throw_exception( "set_column called for ${column} without value" )
     if @_ < 3;
+  $self->throw_exception( "No such column '${column}'" )
+    unless exists $self->{_column_data}{$column} || $self->has_column($column);
+
+  # FIXME - this will work once belongs_to is decoupled from IC
+  #delete $self->{_inflated_column}{$column};
+
   return $self->{_column_data}{$column} = $value;
 }
 
