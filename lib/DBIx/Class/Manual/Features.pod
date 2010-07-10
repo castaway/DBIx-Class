@@ -416,16 +416,12 @@ See L<DBIx::Class::Relationship::Base/create_related> and L<DBIx::Class::Relatio
     ...
  });
 
- my $guard = $schema->txn_scope_guard;
- # ...
- $guard->commit;
-
  $schema->txn_begin; # <-- low level
  # ...
  $schema->txn_commit;
 
-See L<DBIx::Class::Schema/txn_do>, L<DBIx::Class::Schema/txn_scope_guard>,
-L<DBIx::Class::Schema/txn_begin>, and L<DBIx::Class::Schema/txn_commit>.
+See L<DBIx::Class::Schema/txn_do>, L<DBIx::Class::Schema/txn_begin>,
+and L<DBIx::Class::Schema/txn_commit>.
 
 =head1 InflateColumn
 
