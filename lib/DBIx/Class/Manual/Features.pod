@@ -20,8 +20,10 @@ and flows.
 
 =head2 Responsive Community
 
-   needed MSSQL order-by support, they helped me add support
-   generally very welcoming of people willing to help
+=over 1
+=item I needed MSSQL order-by support, they helped me add support
+=item generally very welcoming of people willing to help
+=back
 
 =head1 General ORM
 
@@ -36,7 +38,7 @@ The vast majority of code should run on all databases without needing tweaking
 
 =over 1
 =item C - Create
-=item R - Read
+=item R - Retrieve
 =item U - Update
 =item D - Delete
 =back
@@ -215,7 +217,7 @@ See L<DBIx::Class::Schema/deploy>.
 
 See also: L<DBIx::Class::DeploymentHandler>
 
-=head1 Schema::Loader
+=head2 Schema::Loader
 
 DB -> Perl
 
@@ -239,7 +241,7 @@ DB -> Perl
 
 See L<DBIx::Class::Schema::Loader> and L<DBIx::Class::Schema::Loader::Base/CONSTRUCTOR_OPTIONS>.
 
-=head1 Populate
+=head2 Populate
 
 Made for inserting lots of rows very quicky into database
 
@@ -256,7 +258,7 @@ See L<DBIx::Class::Schema/populate>
 =item I use this to <a href="http://blog.afoolishmanifesto.com/archives/1255">export our whole (200M~) db to SQLite
 =back
 
-=head1 Multicreate
+=head2 Multicreate
 
 Create an object and all of it's related objects all at once
 
@@ -278,11 +280,11 @@ See L<DBIx::Class::ResultSet/create>
 =item for this to work right state and city must mark abbreviation and name as unique
 =back
 
-=head1 Extensible
+=head2 Extensible
 
 DBIx::Class helped pioneer fast MI in Perl 5 with Class::C3, so it is made to allow extensions to nearly every part of it.
 
-=head1 Extensible: DBIC::Helpers
+=head2 Extensible: DBIC::Helpers
 
 =over 1
 =item L<DBIx::Class::Helper::ResultSet::IgnoreWantarray>
@@ -294,7 +296,7 @@ DBIx::Class helped pioneer fast MI in Perl 5 with Class::C3, so it is made to al
 =item L<DBIx::Class::Helper::ResultSet::ToJSON>
 =back
 
-=head1 Extensible: DBIx::Class::TimeStamp
+=head2 Extensible: DBIx::Class::TimeStamp
 
 =over 1
 =item See L<DBIx::Class::TimeStamp>
@@ -303,7 +305,7 @@ DBIx::Class helped pioneer fast MI in Perl 5 with Class::C3, so it is made to al
 =item set_on_update
 =back
 
-=head1 Extensible: Kioku
+=head2 Extensible: Kioku
 
 =over 1
 =item See L<DBIx::Class::Schema::KiokuDB>
@@ -312,7 +314,7 @@ DBIx::Class helped pioneer fast MI in Perl 5 with Class::C3, so it is made to al
 =item beta ( == sexy )
 =back
 
-=head1 Result vs ResultSet
+=head2 Result vs ResultSet
 
 =over 1
 =item Result == Row
@@ -321,11 +323,11 @@ DBIx::Class helped pioneer fast MI in Perl 5 with Class::C3, so it is made to al
 =item Internal Join Optimizer for all DB's (!!!)
 =back
 =item (less important but...)
-=item ResultSource == Table
+=item ResultSource == Queryable collection of rows (Table, View, etc)
 =item Storage == Database
 =back
 
-=head1 ResultSet methods
+=head2 ResultSet methods
 
  package MyApp::Schema::ResultSet::Book;
 
@@ -354,7 +356,7 @@ DBIx::Class helped pioneer fast MI in Perl 5 with Class::C3, so it is made to al
 
 See L<DBIx::Class::Manual::Cookbook/Predefined searches>
 
-=head1 ResultSet method notes
+=head2 ResultSet method notes
 
 =over 1
 =item All searches should be ResultSet methods
@@ -362,18 +364,18 @@ See L<DBIx::Class::Manual::Cookbook/Predefined searches>
 =item L<DBIx::Class::ResultSet/current_source_alias> helps things to work no matter what
 =back
 
-=head1 ResultSet method in Action
+=head2 ResultSet method in Action
 
  $schema->resultset('Book')->good
 
-=head1 ResultSet Chaining
+=head2 ResultSet Chaining
 
  $schema->resultset('Book')
     ->good
     ->cheap
     ->recent
 
-=head1 search_related
+=head2 search_related
 
  my $score = $schema->resultset('User')
     ->search({'me.userid' => 'frew'})
@@ -392,7 +394,7 @@ See L<DBIx::Class::Manual::Cookbook/Predefined searches>
 
 See: L<DBIx::Class::ResultSet/related_resultset>, L<DBIx::ClassResultSet/search_related>, and L<DBIx::Class::ResultSet/get_column>.
 
-=head1 bonus rel methods
+=head2 bonus rel methods
 
  my $book = $author->create_related(
     books => {
@@ -410,7 +412,7 @@ See L<DBIx::Class::Relationship::Base/create_related> and L<DBIx::Class::Relatio
 =item Automaticaly fills in foreign key for you
 =back
 
-=head1 Excellent Transaction Support
+=head2 Excellent Transaction Support
 
  $schema->txn_do(sub {
     ...
@@ -423,7 +425,7 @@ See L<DBIx::Class::Relationship::Base/create_related> and L<DBIx::Class::Relatio
 See L<DBIx::Class::Schema/txn_do>, L<DBIx::Class::Schema/txn_begin>,
 and L<DBIx::Class::Schema/txn_commit>.
 
-=head1 InflateColumn
+=head2 InflateColumn
 
  package Foo::Schema::Result::Book;
 
@@ -448,16 +450,16 @@ and L<DBIx::Class::Schema/txn_commit>.
 
 See L<DBIx::Class::InflateColumn> and L<DBIx::Class::InflateColumn/inflate_column>
 
-=head1 InflateColumn: deflation
+=head2 InflateColumn: deflation
 
  $book->date_published(DateTime->now);
  $book->update;
 
-=head1 InflateColumn: inflation
+=head2 InflateColumn: inflation
 
  say $book->date_published->month_abbr; # Nov
 
-=head1 FilterColumn
+=head2 FilterColumn
 
  package Foo::Schema::Result::Book;
 
@@ -482,7 +484,7 @@ See L<DBIx::Class::InflateColumn> and L<DBIx::Class::InflateColumn/inflate_colum
 
 See L<DBIx::Class::FilterColumn> and L<DBIx::Class::FilterColumn/filter_column>
 
-=head1 ResultSetColumn
+=head2 ResultSetColumn
 
  my $rsc = $schema->resultset('Book')
     ->get_column('price');
@@ -494,7 +496,7 @@ See L<DBIx::Class::FilterColumn> and L<DBIx::Class::FilterColumn/filter_column>
 
 See L<DBIx::Class::ResultSetColumn>
 
-=head1 Aggregates
+=head2 Aggregates
 
  my @res = $rs->search({}, {
     select   => [
@@ -517,7 +519,7 @@ See L<DBIx::Class::ResultSetColumn>
 See L<DBIx::Class::ResultSet/select>, L<DBIx::Class::ResultSet/as>, and
 L<DBIx::Class::ResultSet/group_by>
 
-=head1 Aggregates Notes
+=head2 Aggregates Notes
 
 =over 1
 =item Careful, get_column can basicaly mean THREE things
@@ -526,7 +528,7 @@ L<DBIx::Class::ResultSet/group_by>
 =item public for get resultset column (prev slide)
 =back
 
-=head1 HRI
+=head2 HRI
 
  $rs->search({}, {
    result_class =>
@@ -542,7 +544,7 @@ See L<DBIx::Class::ResultSet/result_class> and L<DBIx::Class::ResultClass::HashR
 =item Great for performance tuning (we went from 2m to < 3s)
 =back
 
-=head1 Subquery Support
+=head2 Subquery Support
 
  my $inside_query = $schema->resultset('Artist')
     ->search({
@@ -555,7 +557,7 @@ See L<DBIx::Class::ResultSet/result_class> and L<DBIx::Class::ResultClass::HashR
 
 See L<DBIx::Class::Manual::Cookbook#Subqueries>
 
-=head1 Bare SQL w/ Placeholders
+=head2 Bare SQL w/ Placeholders
 
  $rs->update({
     # !!! SQL INJECTION VECTOR
