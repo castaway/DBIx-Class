@@ -1,12 +1,10 @@
 use strict;
-use warnings;  
+use warnings;
 
 use Test::More;
 use lib qw(t/lib);
 use DBICTest;
 use Test::More;
-
-plan tests => 15;
 
 my $schema = DBICTest->init_schema();
 my $rs = $schema->resultset( 'CD' );
@@ -131,5 +129,13 @@ my $rs = $schema->resultset( 'CD' );
   is_deeply( $result, $expected );
 }
 
+{
+  my $a = [ { coalesce => [qw/a b c/], -as => 'firstfound' } ];
+  my $b = [ 'other stuff' ];
+  my $expected = [ { coalesce => [qw/a b c/], -as => 'firstfound'}, 'other_stuff' ];
+  my $result = $rs->_merge_attr($a, $b);
+  is_deeply( $result, $expected )
+    || diag do { require Data::Dumper; Data::Dumper::Dumper([$result, $expected]) };
+}
 
-1;
+done_testing;
