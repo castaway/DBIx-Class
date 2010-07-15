@@ -381,6 +381,7 @@ sub _resolve_deps {
         if ( blessed($question)
             && $question->isa('DBIx::Class::ResultSource::View') )
         {
+            no warnings 'uninitialized';
             my ($next_dep_source_name) =
               grep {
                 $question->schema->source($_)->result_class eq $dep
