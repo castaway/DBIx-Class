@@ -134,12 +134,12 @@ sub _dbh_get_autoinc_seq {
   my ( $schema, $table ) = $source_name =~ /(\w+)\.(\w+)/;
   my ($sql, @bind) = $sql_maker->select (
     'ALL_TRIGGERS',
-    ['trigger_body', 'table_owner'],
+    ['TRIGGER_BODY', 'TABLE_OWNER'],
     {
-      $schema ? (owner => $schema) : (),
-      table_name => $table || $source_name,
-      triggering_event => { -like => '%INSERT%' },
-      status => 'ENABLED',
+      $schema ? (OWNER => $schema) : (),
+      TABLE_NAME => $table || $source_name,
+      TRIGGERING_EVENT => { -like => '%INSERT%' },
+      STATUS => 'ENABLED',
      },
   );
   my $sth = $dbh->prepare($sql);
