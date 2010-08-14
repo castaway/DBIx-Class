@@ -144,7 +144,7 @@ sub last_insert_id { shift->_identity }
 
 #
 # MSSQL is retarded wrt ordered subselects. One needs to add a TOP
-# to *all* subqueries, but one also can't use TOP 100 PERCENT
+# to *all* subqueries, but one also *can't* use TOP 100 PERCENT
 # http://sqladvice.com/forums/permalink/18496/22931/ShowThread.aspx#22931
 #
 sub _select_args_to_query {

@@ -25,6 +25,8 @@ Revision history for DBIx::Class
         - Makefile.PL no longer imports GetOptions() to interoperate
           better with Catalyst installers
         - Bumped minimum Module::Install for developers
+        - No longer depend on SQL::Abstract::Limit - DBIC has been doing
+          most of the heavy lifting for a while anyway
 
 0.08123 2010-06-12 14:46 (UTC)
     * Fixes
