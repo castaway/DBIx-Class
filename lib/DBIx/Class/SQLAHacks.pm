@@ -76,7 +76,7 @@ sub select {
   if ($limit) {
     # this is legacy code-flow from SQLA::Limit, it is not set in stone
 
-    ($sql, @bind) = $self->next::method ($table, $fields, $where);
+    ($sql, @bind) = $self->__overriden_select($table, $fields, $where);
 
     my $limiter =
       $self->can ('emulate_limit')  # also backcompat hook from SQLA::Limit
@@ -92,7 +92,7 @@ sub select {
     $sql = $self->$limiter ($sql, $rs_attrs, $limit, $offset);
   }
   else {
-    ($sql, @bind) = $self->next::method ($table, $fields, $where, $rs_attrs);
+    ($sql, @bind) = $self->__overriden_select($table, $fields, $where, $rs_attrs);
   }
 
   push @{$self->{where_bind}}, @bind;
@@ -101,6 +101,25 @@ sub select {
   my @all_bind = $self->_assemble_binds;
 
   return wantarray ? ($sql, @all_bind) : $sql;
+}
+
+sub __overriden_select {
+  my $self   = shift;
+  my ($table, @bind)  = $self->_table(shift);
+  my $fields = shift || '*';
+  my $where  = shift;
+  my $order  = shift;
+
+  my($where_sql, @morebind) = $self->where($where, $order);
+  push @bind, @morebind;
+
+  my $f = (ref $fields eq 'ARRAY') ? join ', ', map { $self->_quote($_) } @$fields
+                                   : $fields;
+  my $sql = join(' ', $self->_sqlcase('select'), $f,
+                      $self->_sqlcase('from'),   $table)
+          . $where_sql;
+
+  return wantarray ? ($sql, @bind) : $sql;
 }
 
 sub _assemble_binds {
@@ -256,6 +275,7 @@ sub _generate_join_clause {
 sub _recurse_from {
   my ($self, $from, @join) = @_;
   my @sqlf;
+  my @binds;
   push(@sqlf, $self->_make_as($from));
   foreach my $j (@join) {
     my ($to, $on) = @$j;
@@ -274,13 +294,17 @@ sub _recurse_from {
     push @sqlf, $self->_generate_join_clause( $join_type );
 
     if (ref $to eq 'ARRAY') {
-      push(@sqlf, '(', $self->_recurse_from(@$to), ')');
+      my ($sql, @local_bind) = $self->_recurse_from(@$to);
+      push(@sqlf, '(', $sql , ')');
+      push @binds, @local_bind;
     } else {
       push(@sqlf, $self->_make_as($to));
     }
-    push(@sqlf, ' ON ', $self->_join_condition($on));
+    my ($sql, @local_bind) = $self->_join_condition($on);
+    push(@sqlf, ' ON ', $sql);
+    push @binds, @local_bind;
   }
-  return join('', @sqlf);
+  return join('', @sqlf), @binds;
 }
 
 sub _fold_sqlbind {
@@ -324,9 +348,16 @@ sub _join_condition {
         my $x = '= '.$self->_quote($v); $j{$_} = \$x;
       }
     };
-    return scalar($self->_recurse_where(\%j));
+    return $self->_recurse_where(\%j);
   } elsif (ref $cond eq 'ARRAY') {
-    return join(' OR ', map { $self->_join_condition($_) } @$cond);
+    my @parts;
+    my @binds;
+    foreach my $c (@$cond) {
+      my ($sql, @bind) = $self->_join_condition($c);
+      push @binds, @bind;
+      push @parts, $sql;
+    }
+    return join(' OR ', @parts), @binds;
   } else {
     croak "Can't handle this yet!";
   }
