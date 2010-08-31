@@ -7,6 +7,7 @@ use lib qw(t/lib);
 use DBICTest;
 
 my $schema = DBICTest->init_schema();
+my $orig_debug = $schema->storage->debug;
 
 # Test various new() invocations - this is all about backcompat, making 
 # sure that insert() still works as expected by legacy code.
@@ -19,6 +20,26 @@ my $schema = DBICTest->init_schema();
 # relations whose PK's are necessary to complete the objects supplied
 # to new(). All other objects should be insert()able afterwards too.
 
+{
+    my $queries = 0;
+    $schema->storage->debugcb(sub { $queries++; });
+    $schema->storage->debug(1);
+
+    my $new_artist = $schema->resultset("Artist")->new_result({
+        name => 'Depeche Mode',
+        cds => [{ 'title' => 'Leave in Silence', 'year' => 1982 }]
+    });
+
+    is($new_artist->name, 'Depeche Mode', 'scalar accessor works');
+    is($queries, 0, 'no queries run');
+
+    is(scalar($new_artist->cds->all), 1, 'relation via in-memory object');
+    is($new_artist->cds->count, 1, 'relation count via in-memory object');
+    is($queries, 0, 'no queries run');
+
+    $schema->storage->debugcb(undef);
+    $schema->storage->debug($orig_debug);
+}
 
 {
     my $new_artist = $schema->resultset("Artist")->new_result({ 'name' => 'Depeche Mode' });
